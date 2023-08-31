@@ -1,0 +1,11 @@
+127.0.0.1 localhost 
+127.0.0.1 localhost.localdomain localhost
+127.0.0.1 localhost4.localdomain4 localhost4
+
+# The following lines are desirable for IPv6 capable hosts
+::1 localhost localhost
+::1 localhost.localdomain localhost
+::1 localhost6.localdomain6 localhost6
+{% for server in groups['patroni_cluster'] %}
+{{ hostvars[server]['ansible_facts'].default_ipv4.address }} {{ hostvars[server]['ansible_facts'].hostname }}
+{% endfor %}

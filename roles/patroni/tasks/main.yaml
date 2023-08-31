@@ -1,0 +1,75 @@
+---
+- name: Install module
+  ansible.builtin.pip:
+    name:
+      - testresources
+      - patroni[etcd]
+      - setuptools
+      - psycopg2-binary
+      #- psycopg2
+      #- scrapy
+      #- pandas
+      #- mypy-lang
+      #- pep8
+      #- openpyxl
+      #- redis
+
+- name: mkdir /etc/patroni
+  shell: mkdir -p /etc/patroni
+
+- name: Copy patroni.yml
+  template:
+    src: patroni.j2
+    dest: /etc/patroni/patroni.yml
+  register: patroni_conf
+
+- name: replace watchdog
+  replace:
+    path: /etc/watchdog.conf
+    regexp: '#watchdog-device.*'
+    replace: 'watchdog-device=/dev/watchdog'
+
+- name: mknod 
+  shell: mknod /dev/watchdog c 10 130
+  register: watchdog_mknod
+
+#- name: chown mknod
+#  file:
+#    path: /dev/watchdog
+#    owner: postgres
+#  register: permission_watchdog
+
+
+- name: Load modules
+  modprobe:
+    name: softdog
+
+- name: Load module permanet
+  copy:
+    src: softdog.conf
+    dest: /etc/modules-load.d/softdog.conf
+    owner: root
+    mode: 644
+
+- name: chown mknod
+  shell: chown postgres /dev/watchdog
+  register: chown_contents
+
+- name: create patroni service
+  copy:
+    src: patroni.conf
+    dest: /etc/systemd/system/patroni.service
+    owner: root
+
+
+- name: reoad daemon
+  shell: systemctl daemon-reload 
+- name: enable patroni service
+  shell: systemctl enable patroni.service
+- name: start patroni service
+  shell: systemctl start patroni.service  
+
+ 
+
+
+

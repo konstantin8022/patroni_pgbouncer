@@ -1,0 +1,30 @@
+ansible_user: root
+
+#name_patroni: patroni1
+#name_patroni: patroni2
+#name_patroni: patroni3
+
+#ip_patroni1: 192.168.1.183
+#ip_patroni2: 192.168.1.243
+#ip_patroni3: 192.168.1.244
+
+#ETCD
+releasever_etcd: 8.5
+
+
+
+#Patroni
+
+
+#Pgbouncer
+host_pgbouncer_master: 192.168.1.183
+
+
+
+
+
+## HA cluser
+# If you need disable HA, undefine ha_cluster_virtual_ip
+ha_cluster_virtual_ip: 192.168.1.250
+ha_backend_db_servers: 5000
+ha_replica_db_servers: 5001

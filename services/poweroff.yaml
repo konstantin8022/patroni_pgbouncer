@@ -1,0 +1,8 @@
+---
+- name: Poweroff patroni_cluster
+  hosts: patroni_cluster
+
+  tasks:
+    - name: Poweroff
+      shell: poweroff
+      

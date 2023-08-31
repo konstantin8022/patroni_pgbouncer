@@ -1,0 +1,57 @@
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     1000
+    user        haproxy
+    group       haproxy
+    daemon
+    stats socket /var/lib/haproxy/stats
+
+
+defaults
+    mode                    tcp
+    log                     global
+    option                  tcplog
+    retries                 3
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout check           10s
+    maxconn                 900
+
+listen stats     # Define a listen section called "stats"
+    mode http
+    bind *:7000  #  7000 HAProxy stats dashboard
+    stats enable #  Enable stats page
+    stats uri /
+
+
+listen primary
+    bind {{ ha_cluster_virtual_ip }}:{{ ha_backend_db_servers }}
+    option httpchk OPTIONS /master
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+{% for server in groups['patroni_cluster'] %}
+    server {{ hostvars[server]['ansible_facts'].hostname }} {{ hostvars[server]['ansible_facts'].default_ipv4.address }}:6432 maxconn 100 check port 8008 # port Patroni
+{% endfor %}
+
+#---------------------------------------------------------------------
+# round robin balancing between the various backends
+#---------------------------------------------------------------------
+
+listen standby
+    bind {{ ha_cluster_virtual_ip }}:{{ ha_replica_db_servers }}
+    balance roundrobin
+    option httpchk OPTIONS /replica
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+{% for server in groups['patroni_cluster'] %}
+    server {{ hostvars[server]['ansible_facts'].hostname }} {{ hostvars[server]['ansible_facts'].default_ipv4.address }}:6432 maxconn 100 check port 8008 # port Patroni
+{% endfor %}    
+    
+
+
+
+

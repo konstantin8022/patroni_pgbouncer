@@ -1,0 +1,30 @@
+---
+- name: Copy pgbouncer
+  template:
+    src: pgbouncer.j2
+    dest: /etc/pgbouncer/pgbouncer.ini
+  register: pgbouncer_conf
+
+- name: Load module permanet
+  copy:
+    src: userlist.txt
+    dest: /etc/pgbouncer/userlist.txt
+    owner: root
+    mode: 644
+
+
+
+#- name: create patroni service
+#  copy:
+#    src: patroni.conf
+#    dest: /etc/systemd/system/patroni.service
+#    owner: root
+
+
+- name: start pgbouncer service
+  shell: systemctl daemon-reload && systemctl enable pgbouncer && systemctl start pgbouncer 
+
+
+
+
+

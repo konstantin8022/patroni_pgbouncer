@@ -1,0 +1,18 @@
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin
+
+export PATH
+export ETCDCTL_API="3"
+{% for server in groups['patroni_cluster'] %}
+{{ hostvars[server]['ansible_facts'].hostname }}={{ hostvars[server]['ansible_facts'].default_ipv4.address }}
+{% endfor %}
+ENDPOINTS=$patroni1:2379,$patroni2:2379,$patroni3:2379
+

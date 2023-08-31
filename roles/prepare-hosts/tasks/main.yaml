@@ -1,0 +1,166 @@
+---
+
+- name: "update hostnames"
+  hostname:
+      name: "{{ groups['patroni_cluster'][0] }}"
+  when: ansible_host=="192.168.1.183"
+
+- name: "update hostnames"
+  hostname:
+      name: "{{ groups['patroni_cluster'][1] }}"
+  when: ansible_host=="192.168.1.243"
+
+- name: "update hostnames"
+  hostname:
+      name: "{{ groups['patroni_cluster'][2] }}"
+  when: ansible_host=="192.168.1.244"
+
+- name: Install packages dnf
+  dnf:
+    name:
+      - net-tools
+      - mc
+      - iproute-tc
+      - vim
+      - git
+      - bash-completion
+      - nfs-utils
+      - python3
+      - tar
+      - rsyslog
+      - chrony
+      - yum-utils
+      - epel-release
+      - postgresql
+      - postgresql-server
+      - pgbouncer
+      - screen    
+    state: latest
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Install packages apt
+  apt:
+    name:
+      - net-tools
+      - mc
+      - vim
+      - git
+      - bash-completion
+      - nfs-utils
+      - python3
+      - tar
+      - rsyslog
+      - chrony
+    state: latest
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Enable NTP server
+  service:
+    name: chronyd
+    state: started
+    enabled: yes
+
+- name: Enable rsyslog
+  service:
+    name: rsyslog
+    state: started
+    enabled: yes
+
+
+- name: Check is swap enable
+  shell: swapon
+  register: swap_present
+  changed_when: false
+  ignore_errors: true
+
+- name: If swap is enabled - disable it
+  shell: swapoff -a
+  when: swap_present.stdout != ""
+
+- name: Disable SWAP in fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\s*swap\s*.*)$'
+    replace: '# \1'
+
+- name: Check Disable SELinux
+  selinux:
+    state: disabled
+  register: selinux_ret
+
+- name: Disable SELinux
+  shell: setenforce 0
+  when: selinux_ret.reboot_required
+
+- name: Load modules
+  modprobe:
+    name: br_netfilter
+
+- name: Set Sysctl on all nodes
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - name: net.ipv4.ip_forward
+      value: 1
+    - name: net.bridge.bridge-nf-call-iptables
+      value: 1
+    - name: net.bridge.bridge-nf-call-ip6tables
+      value: 1
+    - name: vm.max_map_count # for opensearch & elasticserarch
+      value: 262144
+
+- name: Set Sysctl on master node(s)
+  when: inventory_hostname in groups['patroni_cluster']
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - name: net.ipv4.ip_nonlocal_bind
+      value: 1
+
+
+- name: Copy hosts
+  template:
+    src: hosts.j2
+    dest: /etc/hosts 
+  register: hosts_conf
+
+
+
+#- name: add lines hosts
+#  lineinfile: 
+#    dest: /etc/hosts
+#    line: '{{ item }}'
+#  with_items:
+#    - '{{ name_patroni1 }}  {{ ip_patroni1 }}'
+#    - '{{ name_patroni2 }}  {{ ip_patroni2 }}'
+#    - '{{ name_patroni3 }}  {{ ip_patroni3 }}'
+#- name: Add mappings to /etc/hosts
+#  ansible.builtin.blockinfile:
+#    path: /etc/hosts
+#    block: |
+#      {{ item.ip }} {{ item.name }}
+#    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+#  loop:
+#    - { name: {{ name_patroni1 }}, ip: {{ ip_patroni1 }} }
+#    - { name: {{ name_patroni2 }}, ip: {{ ip_patroni2 }} }
+#    - { name: {{ name_patroni3 }}, ip: {{ ip_patroni3 }} }
+
+    
+
+#- name: Disable firewalld
+#  service:
+#    name: firewalld
+#    state: stopped
+#    enabled: no
+
+
+
+- name: Add PS1
+  lineinfile:
+    path: /root/.bashrc
+    state: present
+    line: "PS1='\\[\\e[44;36m\\]\\t:[\\w]\\[\\e[0;0m\\]\\n\\[\\e[0;31;04m\\]\\u\\[\\e[0;0m\\]@\\[\\e[0;32m\\]\\h\\[\\e[0;0m\\] \\$ '"

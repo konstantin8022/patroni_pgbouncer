@@ -1,0 +1,7 @@
+---
+- name: Patroni hosts
+  hosts: patroni_cluster
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - { role: ../roles/patroni }

@@ -1,0 +1,13 @@
+ETCD_NAME={{ansible_hostname}}
+ETCD_DATA_DIR="/var/lib/etcd/{{ansible_hostname}}"
+ETCD_LISTEN_PEER_URLS="http://{{hostvars[inventory_hostname]['ansible_default_ipv4']['address']}}:2380"
+ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{hostvars[inventory_hostname]['ansible_default_ipv4']['address']}}:2380"
+
+
+ETCD_INITIAL_CLUSTER="{% for server in groups['patroni_cluster'] %}{{ hostvars[server]['ansible_facts'].hostname }}=http://{{ hostvars[server]['ansible_facts'].default_ipv4.address }}:2380,{% endfor %}"
+
+ETCD_INITIAL_CLUSTER_STATE="new"
+ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
+ETCD_ADVERTISE_CLIENT_URLS="http://0.0.0.0:2379"
+ETCD_ENABLE_V2="true"

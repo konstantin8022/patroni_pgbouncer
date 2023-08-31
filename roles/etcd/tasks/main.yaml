@@ -1,0 +1,84 @@
+---
+- name: Add repo ETCD
+  copy:
+    src: etcd.repo
+    dest: /etc/yum.repos.d/etcd.repo
+    owner: root
+    mode: 644
+
+- name: Add repo patroni Debian
+  when: ansible_facts['os_family'] == "Debian"
+  yum_repository:
+    name: debian patroni
+    enabled: yes
+    baseurl: ""
+    description: 'debian apt repo'
+    gpgcheck: yes
+    gpgkey:
+      - 'https://download.docker.com/linux/centos/gpg'
+
+- name: Install packages dnf
+  dnf:
+    name:
+      - yum-utils
+      - epel-release
+      - etcd
+      #- python3
+      - python36
+      - python36-devel
+      #- python3-devel
+      - python3-pip
+      - gcc
+      - libpq-devel
+     # - python3-etcd3
+     # - patroni
+     # - patroni-etcd
+      - watchdog
+    #state: latest
+    skip_broken: yes
+    nobest: true
+  when: ansible_facts['os_family'] == "RedHat"
+
+
+
+- name: Install packages apt
+  apt:
+    name:
+      - net-tools
+    state: latest
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Copy etcd.conf
+  template:
+    src: etcd.j2
+    dest: /etc/etcd/etcd.conf
+  register: etcd_conf
+
+- name: Restart etcd
+  service:
+    name: etcd
+    state: restarted
+  when: etcd_conf.changed
+
+- name: Copy bash_profile
+  template:
+    src: bash_profile.j2
+    dest: /root/.bash_profile 
+  register: hosts_conf
+
+- name: bash_Profile init
+  shell: source ~/.bash_profile && etcdctl endpoint status --write-out=table --endpoints=$ENDPOINTS
+
+
+
+#- name: Disable module postgres
+#  shell: dnf -qy module disable postgresql
+#  when: selinux_ret.reboot_required
+
+#- name: Disable  postgres
+#  shell: systemctl disable postgresql-12
+#  when: selinux_ret.reboot_required
+
+
+
+
