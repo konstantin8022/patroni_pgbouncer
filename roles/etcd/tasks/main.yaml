@@ -54,6 +54,15 @@
     dest: /etc/etcd/etcd.conf
   register: etcd_conf
 
+
+- name: Enable etcd
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - etcd  
+
 - name: Restart etcd
   service:
     name: etcd
@@ -69,15 +78,21 @@
 - name: bash_Profile init
   shell: source ~/.bash_profile && etcdctl endpoint status --write-out=table --endpoints=$ENDPOINTS
 
+#- name: etcd reload
+#  systemd:
+#    daemon_reload: yes
+
+#- name: etcd enable
+#  systemd:
+#    name: etcd.service
+#    enabled: yes
+
+#- name: etcd restarted
+#  systemd:
+#    name: etcd.service
+#    state: restarted
 
 
-#- name: Disable module postgres
-#  shell: dnf -qy module disable postgresql
-#  when: selinux_ret.reboot_required
-
-#- name: Disable  postgres
-#  shell: systemctl disable postgresql-12
-#  when: selinux_ret.reboot_required
 
 
 

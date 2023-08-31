@@ -1,1 +1,15 @@
-{{name_patroni1}}
+- name: "update hostnames"
+	{% if inventory_hostname == groups['patroni_cluster'][0] %}
+	  hostname:
+	      name: groups['patroni_cluster'][0]
+	{% endif %}
+
+	{% if inventory_hostname == groups['patroni_cluster'][1] %}
+	  hostname:
+	      name: groups['patroni_cluster'][1]
+	{% endif %}
+
+	{% if inventory_hostname == groups['patroni_cluster'][2] %}
+	  hostname:
+	      name: groups['patroni_cluster'][2]
+	{% endif %}

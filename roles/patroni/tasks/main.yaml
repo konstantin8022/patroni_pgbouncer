@@ -62,12 +62,38 @@
     owner: root
 
 
-- name: reoad daemon
-  shell: systemctl daemon-reload 
-- name: enable patroni service
-  shell: systemctl enable patroni.service
-- name: start patroni service
-  shell: systemctl start patroni.service  
+- name: Enable patroni
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - patroni
+ 
+- name: Restart patroni
+  service:
+    name: patroni
+    state: restarted
+  when: patroni_conf.changed
+#- name: systemd reload
+#  systemd:
+#    daemon_reload: yes
+
+#- name: patroni enable
+#  systemd:
+#    name: patroni.service
+#    enabled: yes
+
+#- name: patroni reload
+#  systemd:
+#    name: patroni.service
+#    state: restarted
+#- name: reoad daemon
+#  shell: systemctl daemon-reload 
+#- name: enable patroni service
+#  shell: systemctl enable patroni.service
+#- name: start patroni service
+#  shell: systemctl start patroni.service  
 
  
 

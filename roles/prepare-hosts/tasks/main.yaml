@@ -1,19 +1,24 @@
 ---
+#- name: Copy hosts
+#  template:
+#    src: hostname.j2
+#    dest: /etc/hostname 
+#  register: hostname_conf
 
 - name: "update hostnames"
   hostname:
       name: "{{ groups['patroni_cluster'][0] }}"
-  when: ansible_host=="192.168.1.183"
+  when: inventory_hostname == groups['patroni_cluster'][0]
 
 - name: "update hostnames"
   hostname:
       name: "{{ groups['patroni_cluster'][1] }}"
-  when: ansible_host=="192.168.1.243"
+  when: inventory_hostname == groups['patroni_cluster'][1]
 
 - name: "update hostnames"
   hostname:
       name: "{{ groups['patroni_cluster'][2] }}"
-  when: ansible_host=="192.168.1.244"
+  when: inventory_hostname == groups['patroni_cluster'][2]
 
 - name: Install packages dnf
   dnf:

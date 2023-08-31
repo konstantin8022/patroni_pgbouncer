@@ -1,0 +1,6 @@
+{% for server in groups['patroni_cluster'] %}
+name: "update hostnames2"
+  hostname:
+      name: "{{ hostvars[server]['ansible_facts'].hostname }} "
+  when: ansible_host=="{{ hostvars[server]['ansible_facts'].default_ipv4.address }}" 
+{% endfor %}

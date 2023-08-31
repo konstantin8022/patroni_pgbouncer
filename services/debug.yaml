@@ -1,17 +1,6 @@
 # Холст для всяких тестов.
 ---
- vars:
-      list1:
-        - name: name1
-          value1: matvey
-        - name: name2
-          value1: misha
-      list2:
-        - name: name1
-          value2: sergey
-        - name: name3
-          value2: andrey
-          
+ 
 - name: Test playbook
   hosts: patroni_cluster
   #become: yes
@@ -19,18 +8,6 @@
   vars:
     ansible_python_interpreter: /usr/bin/python3
   tasks:
-   
-  - name: this debug 
-    debug:
-      msg: "{{ list1 | community.general.lists_mergeby(list2, 'name') }}"    
-  #- name: chown mknod
-  #  shell: chown postgres /dev/watchdog
-  #  register: contents
-
-  #- name: Init PostgreSQL DB
-  #  debug:
-  #    msg: "{{ chown_contents }}"
- 
   #####################################################  
   #- name: Gather the package facts
   #  package_facts:
@@ -40,8 +17,7 @@
   #  debug:
   #    var: ansible_facts.packages
 ########################################################
-    
-
+ 
 #  - name: "update hostnames"
 #    hostname:
 #      name: "{{ item }}"
@@ -57,9 +33,27 @@
 
   #- name: Show Value of Variable
   #  debug:
-  #    msg: "{{ groups['patroni_cluster'][1] }}"
-
+      #msg: "{{ groups['patroni_cluster'][1] }}"
+  #    msg: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
   
+  #- name: "update hostnames1"
+  #  debug:
+  #    msg: "{{ groups['patroni_cluster'][0] }}"
+  #  when: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'][0] }}"
+
+  #- name: "update hostnames2"
+  #  debug:
+  #    msg: "{{ groups['patroni_cluster'][1] }}"
+  #  when: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'][1] }}"
+
+  #- name: "update hostnames3"
+  #  debug:
+  #    msg: "{{ groups['patroni_cluster'][2] }}"
+  #  when: "{{  hostvars[inventory_hostname]['ansible_default_ipv4']['address'][2] }}"
+
+
+
+
   #- name: Run a shell command and register its output as a variable
   #  shell: ls -latr
   #  register: command_result
