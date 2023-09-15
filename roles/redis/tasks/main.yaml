@@ -1,0 +1,67 @@
+---
+- name: Install packages dnf
+  dnf:
+    name:
+      - net-tools
+      - redis
+    state: latest
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: Install packages apt
+  apt:
+    name:
+      - redis
+    state: latest
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Change redis config bind
+  lineinfile: dest=/etc/redis/redis.conf
+              regexp='^bind'
+              insertbefore=BOF
+              line='bind 127.0.0.1 {{ansible_host}}'
+
+- name: Change redis config protected-mode
+  lineinfile: dest=/etc/redis/redis.conf
+              regexp='^protected-mode'
+              insertbefore=BOF
+              line='protected-mode no'
+
+- name: Change redis config slaveof
+  lineinfile: dest=/etc/redis/redis.conf
+              regexp='^replicaof'
+              insertbefore=BOF
+              line='#replicaof'
+
+- name: Change redis config requirepass
+  lineinfile: dest=/etc/redis/redis.conf
+              line='requirepass 123qwe'
+
+- name: Change redis config masterauth
+  lineinfile: dest=/etc/redis/redis.conf
+              line='masterauth 123qwe'
+
+- name: Enable redis
+  service:
+    name: redis
+    state: started
+    enabled: yes
+
+ 
+- name: Restart redis
+  service:
+    name: redis
+    state: restarted
+
+
+#- name: Restart redis-server
+#  service:
+#    name: "redis-server"
+#    state: "restarted"
+#    enabled: "yes"
+
+
+
+
+
+    
+

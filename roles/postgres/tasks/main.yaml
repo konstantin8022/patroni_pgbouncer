@@ -1,0 +1,49 @@
+---
+# yum repolist -y
+# yum -y install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+# dnf module list postresql -y
+
+#- name: Add repo ETCD
+#  copy:
+#    src: pgdg.repo
+#    dest: /etc/yum.repos.d/pgdg.repo
+#    owner: root
+#    mode: 644
+
+- name: add repo pgp
+  shell: dnf install -y --nogpgcheck https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+- name: disable module
+  shell: dnf -qy module disable postgresql 
+
+- name: Install postgres14
+  dnf:
+    name:
+      - postgresql14-server
+      - postgresql14-contrib
+    skip_broken: yes
+    nobest: true      
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: disable module
+  shell: /usr/pgsql-14/bin/postgresql-14-setup initdb  
+
+- name: Enable postgres14
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - postgresql-14
+
+
+- name: Restart postgres14
+  service:
+    name: postgresql-14
+    state: restarted
+#  when: haproxy_conf.changed   
+
+
+
+
+

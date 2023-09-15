@@ -61,6 +61,8 @@ ssh-copy-id root@patroni3
    ansible-playbook ./services/debug.yaml -vvvvv
 
 ```
+Patroni on Master : postgres=# create user replicator replication login encrypted password 'replicator';
+
 
 
 * `ha_cluster_virtual_ip` - виртуальный IP адрес.
